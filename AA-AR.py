@@ -95,7 +95,7 @@ def sketching(focus_plots, sketch_num, account_id, num_dst, s_rate=0.995, d_rate
 	permutation = []
 	sum_graph = np.sum(np.array(focus_plots), axis=0)
 
-	for ski in progressbar.progressbar(range(sketch_num)):
+	for _ in progressbar.progressbar(range(sketch_num)):
 		src_id = [idx for idx in range(len(account_id)) if np.random.random_sample() > s_rate]
 		ori_dst_id = [idx for idx in range(pn) if np.random.random_sample() > d_rate]
 		dst_id = []
