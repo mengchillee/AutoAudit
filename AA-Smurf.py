@@ -145,7 +145,6 @@ def AA_Smurf(ajm, c, max_iter, visualize):
 		start_arr.append(start)
 		mdl_arr.append(ori_mdl)
 		iter += 1
-		break
 	print('Done!\n')
 
 	### Get the result with MDL 10% higher than the minimum bits
