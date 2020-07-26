@@ -6,8 +6,6 @@ import pickle
 import copy
 import matplotlib.pyplot as plt
 import argparse
-from concurrent.futures import ProcessPoolExecutor
-
 
 def log_star(x):
 	"""
