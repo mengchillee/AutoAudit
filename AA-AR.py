@@ -1,23 +1,30 @@
+####################################
+# Author: Jeremy (Meng-Chieh) Lee  #
+# Date	: 2020/05/04               #
+####################################
+
 import numpy as np
 import pandas as pd
 from sklearn.ensemble import IsolationForest
 from scipy.spatial.distance import cosine
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import r2_score
-import progressbar
 import matplotlib.pyplot as plt
+from joblib import Parallel, delayed
 import os
 import argparse
 np.seterr(divide='ignore', invalid='ignore')
 
 fn = 12
 pn = int((fn + 1) * fn / 2)
+
 feature_names = ['Unique In Degree', 'Multi In Degree',
 				 'Unique Out Degree', 'Multi Out Degree',
 				 'Total In Weight', 'Mean In Weight',
 				 'Median In Weight', 'Variance In Weight',
 				 'Total Out Weight', 'Mean Out Weight',
 				 'Median Out Weight', 'Variance Out Weight']
+
 
 def total_mean_median_variance(arr):
 	tol = np.sum(arr)
@@ -55,37 +62,48 @@ def generate_features(df):
 
 	return account_id, np.array(features)
 
+def generate_isolation_forest(df, ts, window_size, aid_dict):
+	tdf = df[(df['Timestamp'] >= ts) & (df['Timestamp'] < ts + window_size)]
+	aid, features = generate_features(tdf)
+
+	plot = np.zeros((len(aid_dict), pn))
+	arr1, arr2, num = [], [], 0
+	focus_plots, fea_arr, aid_arr = [], [], []
+	for f1 in range(len(features)):
+		for f2 in range(f1 + 1, len(features)):
+			nzidx = np.where((features[f1] != 0) & (features[f2] != 0))[0]
+			tmp_aid = aid[nzidx]
+			if len(nzidx) != 0:
+				f = np.array([np.log10(features[f1][nzidx] + 1), np.log10(features[f2][nzidx] + 1)]).T
+				cls = IsolationForest(n_estimators=100, contamination='auto', behaviour='new')
+				cls.fit(f)
+				scores = np.array([-1 * s + 0.5 for s in cls.decision_function(f)])
+				for idx, s in zip(tmp_aid, scores):
+					plot[aid_dict[idx]][num] += s
+			arr1.append(f)
+			arr2.append(tmp_aid)
+			num += 1
+
+	return plot, arr1, arr2
+
 def generate_focus_plots(df, window_size, overlap=0.5):
-	focus_plots, fea_arr, aid_arr, ts_range, fea_dict = [], [], [], [], {}
 	account_id = np.unique(df[['Source', 'Destination']].values)
 	aid_dict = {a: idx for idx, a in enumerate(account_id)}
 	move = int(window_size * overlap)
 
-	for ts in progressbar.progressbar(range(df['Timestamp'].min(), df['Timestamp'].max() - window_size, move)):
-		tdf = df[(df['Timestamp'] >= ts) & (df['Timestamp'] < ts + window_size)]
-		ts_range.append([ts, ts + window_size])
-		aid, features = generate_features(tdf)
+	ts_range = [[ts, ts + window_size] for ts in range(df['Timestamp'].min(), df['Timestamp'].max() - window_size, move)]
+	fea_dict, num = {}, 0
+	for f1 in range(fn):
+		for f2 in range(f1 + 1, fn):
+			fea_dict[num] = (f1, f2)
+			num += 1
 
-		plot = np.zeros((len(account_id), pn))
-		arr1, arr2, num = [], [], 0
-		for f1 in range(len(features)):
-			for f2 in range(f1 + 1, len(features)):
-				nzidx = np.where((features[f1] != 0) & (features[f2] != 0))[0]
-				tmp_aid = aid[nzidx]
-				if len(nzidx) != 0:
-					f = np.concatenate([np.log1p(features[f1][nzidx]).reshape(-1, 1), np.log1p(features[f2][nzidx]).reshape(-1, 1)], axis=1)
-					cls = IsolationForest(n_estimators=100, contamination='auto', behaviour='new')
-					cls.fit(f)
-					scores = np.array([-1 * s + 0.5 for s in cls.decision_function(f)])
-					for idx, s in zip(tmp_aid, scores):
-						plot[aid_dict[idx]][num] += s
-				arr1.append(f)
-				arr2.append(tmp_aid)
-				fea_dict[num] = (f1, f2)
-				num += 1
-		focus_plots.append(plot)
-		fea_arr.append(arr1)
-		aid_arr.append(arr2)
+	results = Parallel(n_jobs=4)(
+		[delayed(generate_isolation_forest)(df, ts, window_size, aid_dict)
+		 for ts in range(df['Timestamp'].min(), df['Timestamp'].max() - window_size, move)])
+	focus_plots = [r[0] for r in results]
+	fea_arr = [r[1] for r in results]
+	aid_arr = [r[2] for r in results]
 
 	return focus_plots, account_id, fea_arr, fea_dict, aid_arr, aid_dict, ts_range
 
@@ -94,8 +112,7 @@ def sketching(focus_plots, sketch_num, account_id, num_dst, s_rate=0.995, d_rate
 
 	permutation = []
 	sum_graph = np.sum(np.array(focus_plots), axis=0)
-
-	for _ in progressbar.progressbar(range(sketch_num)):
+	for ski in range(sketch_num):
 		src_id = [idx for idx in range(len(account_id)) if np.random.random_sample() > s_rate]
 		ori_dst_id = [idx for idx in range(pn) if np.random.random_sample() > d_rate]
 		dst_id = []

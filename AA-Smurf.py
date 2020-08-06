@@ -1,9 +1,15 @@
+####################################
+# Author: Jeremy (Meng-Chieh) Lee  #
+# Date	: 2020/05/04               #
+####################################
+
 import numpy as np
 from scipy import sparse
 from math import ceil
 from collections import OrderedDict
 import pickle
 import copy
+from joblib import Parallel, delayed
 import matplotlib.pyplot as plt
 import argparse
 
@@ -21,13 +27,13 @@ def log_star(x):
 
 def edgelist_to_matrix(edgelist):
 	"""
-	Convert edgelist into adjacency matrix
+	Transform edgelist to adjacency matrix
 
 	INPUTS
-	Edgelist
+	Edge List
 
 	OUTPUTS
-	Adjacency matrix of given edgelist
+	Adjacency matrix and dictionary of nodes
 	"""
 	node_dict = {e: idx for idx, e in enumerate(np.unique(list(edgelist)))}
 	ajm = np.zeros((len(node_dict), len(node_dict)))
@@ -48,10 +54,9 @@ def compute_mdl(ajm, order, start, count):
 	OUTPUTS
 	[Encoding description length, Purity]
 	"""
-
 	purity, mdl, n = [], 0, len(ajm)
 	order.extend([i for i in range(n) if i not in order])
-	ajm = ajm[np.ix_(order, order)]
+	ajm = np.array(ajm)[np.ix_(order, order)]
 
 	### Encode sub-matrix A, B and C
 	for idx in range(1, len(start)):
@@ -78,20 +83,21 @@ def compute_mdl(ajm, order, start, count):
 
 	return mdl, np.mean(purity)
 
-def AA_Smurf(edgelist, c, max_iter, visualize, ans):
+def AA_Smurf(ajm, max_iter, visualize, ans):
 	"""
 	Identify the best order for spotting smurf pattern
 
 	INPUTS
 	ajm: Binary adjacency matrix
-	c: Intermediaries threshod
 	max_iter: Maximum iteration to run the algorithm
 	visualize: Path of visualization result
 
 	OUTPUTS
 	[Reordered matrix, Best order for reordering]
 	"""
-	ajm, node_dict = edgelist_to_matrix(edgelist)
+	### In case using 'cfd_injected.pkl' file
+	# ajm, node_dict = edgelist_to_matrix(edgelist)
+
 	### Get edge-pairs which have the number of intermediaries hgiher than the threshold c
 	print('Get Edge-Pairs...')
 	row, col = ajm, ajm.T
@@ -99,13 +105,14 @@ def AA_Smurf(edgelist, c, max_iter, visualize, ans):
 	dis_mtr = (sparse.csr_matrix(ajm) * sparse.csr_matrix(ajm)).todense()
 	for idx1, idx2 in zip(*dis_mtr.nonzero()):
 		val = dis_mtr[idx1, idx2]
-		if val >= c:
+		if val >= 3:
 			edis[(idx1, idx2)] = [val, np.arange(len(row))[(row[idx1] + col[idx2]) == 2]]
 	edis = OrderedDict(sorted(edis.items(), key=lambda t: t[1][0])[::-1])
 	print('Done!\n')
 
 	### Heuristically identify the best order by MDL and purity
 	print('Identify Best Order...')
+
 	def func(ajm, key, value, order, count, start, prev_mdl):
 		if key[0] not in order and key[1] not in order:
 			order.append(key[0])
@@ -115,7 +122,7 @@ def AA_Smurf(edgelist, c, max_iter, visualize, ans):
 			order.extend(tmp_mid)
 			order.append(key[1])
 			start.append(len(order))
-			mdl, purity = compute_mdl(ajm, copy.copy(order), copy.copy(start),
+			mdl, purity = compute_mdl(ajm, order, start,
 								[count[0] + 1, count[1] + len(tmp_mid), count[2] + 1])
 			score = ((prev_mdl - mdl) / prev_mdl) * purity
 
@@ -128,20 +135,20 @@ def AA_Smurf(edgelist, c, max_iter, visualize, ans):
 	count_arr, order_arr, start_arr, mdl_arr = [[0, 0, 0]], [[]], [[0]], [old_mdl]
 	iter = 0
 	while True:
-		prev_mdl, prev_score = mdl_arr[-1], 0
+		prev_mdl = mdl_arr[-1]
 		tmp_mdl, tmp_score, tmp_order, tmp_start, tmp_count = [], [], [], [], []
-		for idx, (key, value) in enumerate(edis.items()):
-			mdl, score, order, start, count = func(copy.copy(ajm), \
-												   key, value, \
-												   copy.copy(order_arr[-1]), \
-												   copy.copy(count_arr[-1]), \
-												   copy.copy(start_arr[-1]),
-												   prev_mdl)
-			tmp_mdl.append(mdl)
-			tmp_score.append(score)
-			tmp_order.append(order)
-			tmp_start.append(start)
-			tmp_count.append(count)
+
+		results = Parallel(n_jobs=4)(
+			[delayed(func)(ajm, key, value, \
+						   copy.copy(order_arr[-1]), \
+						   copy.copy(count_arr[-1]), \
+						   copy.copy(start_arr[-1]), prev_mdl)
+			 for idx, (key, value) in enumerate(edis.items())])
+		tmp_mdl = [r[0] for r in results]
+		tmp_score = [r[1] for r in results]
+		tmp_order = [r[2] for r in results]
+		tmp_start = [r[3] for r in results]
+		tmp_count = [r[4] for r in results]
 
 		### No more smurf-like pattern found
 		if np.max(tmp_score) == -1 or (max_iter != None and iter > max_iter):
@@ -150,16 +157,16 @@ def AA_Smurf(edgelist, c, max_iter, visualize, ans):
 		count_arr.append(tmp_count[max_idx])
 		order_arr.append(tmp_order[max_idx])
 		start_arr.append(tmp_start[max_idx])
-		mdl_arr.append(tmp_mdl[max_idx])
+		mdl_arr.append(tmp_mdl[max_idx]
 		iter += 1
 	print('Done!\n')
 
 	### Get the result with MDL 10% higher than the minimum bits
 	max_idx = next(idx - 1 for idx, m in enumerate(mdl_arr) if m < mdl_arr[-1] * 1.1)
-
 	count, order, start, ori_mdl = count_arr[max_idx], order_arr[max_idx], start_arr[max_idx], mdl_arr[max_idx]
-	order.extend([i for i in range(n) if i not in order])
+	order.extend([i for i in range(len(ajm)) if i not in order])
 	ro_ajm = ajm[np.ix_(order, order)]
+
 
 	if visualize != None:
 		print('Start Visualize Result...')
@@ -177,16 +184,17 @@ def AA_Smurf(edgelist, c, max_iter, visualize, ans):
 
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser(description='Parameters for AA-Smurf of AutoAudit')
-	parser.add_argument('--f', default='data/cfd_injected5.pkl', type=str, help='Input Path')
+	parser.add_argument('--f', default='data/sample_matrix.txt', type=str, help='Input Path')
 	parser.add_argument('--o', default='results/AA-Smurf_result.png', type=str, help='Output Path')
-	parser.add_argument('--c', default=3, type=int, help='Intermediaries Threshod')
 	parser.add_argument('--i', default=None, type=int, help='Maximum Iteration')
 	args = parser.parse_args()
 
-	with open(args.f, 'rb') as handle:
-		data = pickle.load(handle)
+	ajm = np.loadtxt(args.f)
+	ro_ajm, order = AA_Smurf(ajm, args.c, args.i, args.o)
 
-	for k, v in data.items():
-		s = 0
-		for idx, vv in enumerate(v):
-			ro_ajm, order = AA_Smurf(vv['Edgelist'], args.c, args.i, args.o, vv['Label'])
+	### In case using 'cfd_injected.pkl' file
+	# with open(args.f, 'rb') as handle:
+	# 	data = pickle.load(handle)
+	# for k, v in data.items():
+	# 	for idx, vv in enumerate(v):
+	# 		ro_ajm, order = AA_Smurf(vv['Edgelist'], args.i, args.o, vv['Label'])
