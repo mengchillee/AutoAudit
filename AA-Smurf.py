@@ -83,7 +83,7 @@ def compute_mdl(ajm, order, start, count):
 
 	return mdl, np.mean(purity)
 
-def AA_Smurf(ajm, max_iter, visualize, ans):
+def AA_Smurf(ajm, max_iter, visualize):
 	"""
 	Identify the best order for spotting smurf pattern
 
@@ -157,7 +157,7 @@ def AA_Smurf(ajm, max_iter, visualize, ans):
 		count_arr.append(tmp_count[max_idx])
 		order_arr.append(tmp_order[max_idx])
 		start_arr.append(tmp_start[max_idx])
-		mdl_arr.append(tmp_mdl[max_idx]
+		mdl_arr.append(tmp_mdl[max_idx])
 		iter += 1
 	print('Done!\n')
 
@@ -190,11 +190,11 @@ if __name__ == '__main__':
 	args = parser.parse_args()
 
 	ajm = np.loadtxt(args.f)
-	ro_ajm, order = AA_Smurf(ajm, args.c, args.i, args.o)
+	ro_ajm, order = AA_Smurf(ajm, args.i, args.o)
 
 	### In case using 'cfd_injected.pkl' file
 	# with open(args.f, 'rb') as handle:
 	# 	data = pickle.load(handle)
 	# for k, v in data.items():
 	# 	for idx, vv in enumerate(v):
-	# 		ro_ajm, order = AA_Smurf(vv['Edgelist'], args.i, args.o, vv['Label'])
+	# 		ro_ajm, order = AA_Smurf(vv['Edgelist'], args.i, args.o)
