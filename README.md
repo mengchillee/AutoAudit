@@ -49,7 +49,8 @@ Experiments could be reproduced by running **demo_XXX.py** directly.
 You could simply download/clone the entire repository and execute the code by 
 
 ```cmd
-python demo_XXX.py
+python AA-Smurf.py
+python AA-AR.py
 ```
 
 ## Results
@@ -57,5 +58,4 @@ python demo_XXX.py
 **We also need to present some initial results**
 
 ## Conclusions
-
-In this work,
+In this work, we present AutoAudit, which addresses the anomaly detection problem on time-evolving accounting datasets. This kind of data is usually complicated and hard to organize. Our main purpose is to automatically spot anomalies, such as money laundering, providing huge convenience for auditors and risk management professionals. Our approach is also general enough to be easily modified to solve problems in different domains.
