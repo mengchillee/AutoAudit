@@ -43,8 +43,8 @@ Three datasets are used (see dataset folder):
 | Czech Financial  | 11,374      | 273,508      | 01/05/1993 to 12/14/1998         |
 | Enron Email      | 16,771      | 1,487,863    | 01/01/2001 to 12/31/2001          |
 
-Czech Financial dataset can be found in https://data.world/lpetrocelli/czech-financial-dataset-real-anonymized-transactions.
-Enron Email dataset can be found in https://www.cs.cmu.edu/~./enron/.
+- Czech Financial dataset can be found in https://data.world/lpetrocelli/czech-financial-dataset-real-anonymized-transactions.
+- Enron Email dataset can be found in https://www.cs.cmu.edu/~./enron/.
 
 ## Usage and Sample Output (Demo Version)
 Experiments could be reproduced by running **demo_XXX.py** directly. 
