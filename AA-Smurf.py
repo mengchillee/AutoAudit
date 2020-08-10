@@ -122,10 +122,9 @@ def AA_Smurf(ajm, max_iter, visualize):
 			order.extend(tmp_mid)
 			order.append(key[1])
 			start.append(len(order))
-			mdl, purity = compute_mdl(ajm, order, start,
+			mdl, purity = compute_mdl(ajm, copy.copy(order), copy.copy(start),
 								[count[0] + 1, count[1] + len(tmp_mid), count[2] + 1])
 			score = ((prev_mdl - mdl) / prev_mdl) * purity
-
 			if mdl < prev_mdl:
 				count = [count[0] + 1, count[1] + len(tmp_mid), count[2] + 1]
 				return mdl, score, order, start, count
@@ -136,8 +135,6 @@ def AA_Smurf(ajm, max_iter, visualize):
 	iter = 0
 	while True:
 		prev_mdl = mdl_arr[-1]
-		tmp_mdl, tmp_score, tmp_order, tmp_start, tmp_count = [], [], [], [], []
-
 		results = Parallel(n_jobs=4)(
 			[delayed(func)(ajm, key, value, \
 						   copy.copy(order_arr[-1]), \
@@ -177,7 +174,8 @@ def AA_Smurf(ajm, max_iter, visualize):
 		plt.subplot(1, 2, 2)
 		plt.matshow(ro_ajm, fignum=False, cmap='binary')
 		plt.title('After Reordering')
-		plt.savefig(visualize)
+		# plt.savefig(visualize)
+		plt.show()
 		print('Done!\n')
 
 	return ro_ajm, order
