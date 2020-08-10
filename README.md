@@ -7,10 +7,10 @@ Lee, MC., Zhao, Y., Wang, A., Liang, P.J., Akoglu, L., Tseng, V.S., and Faloutso
 ##  Introduction
 In this paper we propose AutoAudit, a systematic method for handling anomaly detection problems not only in accounting datasets, but also in other real-world datasets. 
 It consists four major components:
-- “Smurfing” Detection: We proposeAA-SMURF, an un-supervised and parameter-free algorithm to detect injected“Smurfing” pattern in real-world datasets.
-- Attention Routing: We proposeAA-ARto attend to themost suspicious periods in time-evolving graphs and pro-vide explanations.
-- Discoveries:  We  discover  three  month-pairs  with  highcorrelation, proved by “success stories”, and patterns ofaccounting datasets follow Power Laws in log-log scales.
-- Generality: We further generalized our method on otherreal-world graph datasets, such as Enron Email and CzechFinancial datasets.
+- **"Smurfing" Detection**: We proposeAA-SMURF, an un-supervised and parameter-free algorithm to detect injected“Smurfing” pattern in real-world datasets.
+- **Attention Routing**: We proposeAA-ARto attend to themost suspicious periods in time-evolving graphs and pro-vide explanations.
+- **Discoveries**:  We  discover  three  month-pairs  with  highcorrelation, proved by “success stories”, and patterns ofaccounting datasets follow Power Laws in log-log scales.
+- **Generality**: We further generalized our method on otherreal-world graph datasets, such as Enron Email and CzechFinancial datasets.
 
 **Let us add a figure here to describe the system:**
 
