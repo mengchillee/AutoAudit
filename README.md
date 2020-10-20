@@ -2,7 +2,19 @@
 
 ------------
 
-Lee, MC., Zhao, Y., Wang, A., Liang, P.J., Akoglu, L., Tseng, V.S., and Faloutsos, C., AUTOAUDIT: Mining Accounting and Time-Evolving Graphs. **Under submission at *IEEE International Conference on Big Data (IEEE BigData)***, 2020.
+Lee, MC., Zhao, Y., Wang, A., Liang, P.J., Akoglu, L., Tseng, V.S., and Faloutsos, C., AutoAudit: Mining Accounting and Time-Evolving Graphs. *2020 IEEE International Conference on Big Data (Big Data)*, 2020.
+
+Please cite the paper as:
+
+    @inproceedings{lee2020AutoAudit,
+      title={{AutoAudit:} Mining Accounting and Time-Evolving Graphs},
+      author={Lee, Meng-Chieh and Zhao, Yue and Wang, Aluna and Liang, Pierre Jinghong and Akoglu, Leman and Tseng, Vincent S. and Faloutsos, Christos},
+      booktitle={2020 IEEE International Conference on Big Data (Big Data)},
+      year={2020},
+      organization={IEEE},
+    }
+
+
 
 ##  Introduction
 In this paper we propose AutoAudit, a systematic method for handling anomaly detection problems not only in accounting datasets, but also in other real-world datasets. 
