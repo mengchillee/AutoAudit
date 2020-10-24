@@ -67,9 +67,5 @@ python AA-Smurf.py
 python AA-AR.py
 ```
 
-## Results
-
-**We also need to present some initial results**
-
 ## Conclusions
 In this work, we present AutoAudit, which addresses the anomaly detection problem on time-evolving accounting datasets. This kind of data is usually complicated and hard to organize. Our main purpose is to automatically spot anomalies, such as money laundering, providing huge convenience for auditors and risk management professionals. Our approach is also general enough to be easily modified to solve problems in different domains.
