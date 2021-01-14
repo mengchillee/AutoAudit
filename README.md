@@ -37,12 +37,14 @@ The experiment code is writen in Python 3 and built on a number of Python packag
 - numpy==1.13.1
 - scikit_learn==0.19.1
 
+<!-- 
 Batch installation is possible using the supplied "requirements.txt":
 
 ````cmd
 pip install -r requirements.txt
 ````
-
+-->
+ 
 ------------
 
 
