@@ -24,10 +24,12 @@ It consists four major components:
 - **Discoveries**:  We  discover  three  month-pairs  with  highcorrelation, proved by “success stories”, and patterns ofaccounting datasets follow Power Laws in log-log scales.
 - **Generality**: We further generalized our method on otherreal-world graph datasets, such as Enron Email and CzechFinancial datasets.
 
+
+<!-- 
 **Let us add a figure here to describe the system:**
 
 In addition to xxxx
-
+-->
 
 ## Installation and Dependency
 The experiment code is writen in Python 3 and built on a number of Python packages:
