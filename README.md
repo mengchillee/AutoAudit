@@ -58,8 +58,8 @@ Three datasets are used (see dataset folder):
 - Czech Financial dataset can be found in https://data.world/lpetrocelli/czech-financial-dataset-real-anonymized-transactions.
 - Enron Email dataset can be found in https://www.cs.cmu.edu/~./enron/.
 
-## Usage and Sample Output (Demo Version)
-Experiments could be reproduced by running **demo_XXX.py** directly. 
+## Usage and Sample Output
+Experiments could be reproduced by running the code directly. 
 You could simply download/clone the entire repository and execute the code by 
 
 ```cmd
