@@ -4,6 +4,8 @@
 
 Lee, MC., Zhao, Y., Wang, A., Liang, P.J., Akoglu, L., Tseng, V.S., and Faloutsos, C., AutoAudit: Mining Accounting and Time-Evolving Graphs. *IEEE International Conference on Big Data (Big Data)*, 2020.
 
+https://ieeexplore.ieee.org/abstract/document/9378346
+
 Please cite the paper as:
 
     @inproceedings{lee2020AutoAudit,
